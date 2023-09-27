@@ -30,7 +30,7 @@ from prowler.lib.cli.parser import ProwlerArgumentParser
 from prowler.lib.logger import logger, set_logging_config
 from prowler.lib.outputs.compliance import display_compliance_table
 from prowler.lib.outputs.html import add_html_footer, fill_html_overview_statistics
-from prowler.lib.outputs.json import close_json
+from prowler.lib.outputs.json import close_json, close_json_athena
 from prowler.lib.outputs.outputs import extract_findings_statistics
 from prowler.lib.outputs.slack import send_slack_message
 from prowler.lib.outputs.summary_table import display_summary_table
@@ -204,6 +204,10 @@ def prowler():
             # Close json file if exists
             if "json" in mode:
                 close_json(
+                    audit_output_options.output_filename, args.output_directory, mode
+                )
+            if "json_athena" in mode:
+                close_json_athena(
                     audit_output_options.output_filename, args.output_directory, mode
                 )
             if mode == "html":

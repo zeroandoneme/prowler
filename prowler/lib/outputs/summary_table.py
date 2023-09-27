@@ -9,6 +9,7 @@ from prowler.config.config import (
     json_asff_file_suffix,
     json_file_suffix,
     json_ocsf_file_suffix,
+    json_athena_file_suffix,
 )
 from prowler.lib.logger import logger
 from prowler.providers.common.outputs import Provider_Output_Options
@@ -131,6 +132,10 @@ def display_summary_table(
             if "json" in output_options.output_modes:
                 print(
                     f" - JSON: {output_directory}/{output_filename}{json_file_suffix}"
+                )
+            if "json_athena" in output_options.output_modes:
+                print(
+                    f" - JSON-ATHENA: {output_directory}/{output_filename}{json_athena_file_suffix}"
                 )
 
         else:

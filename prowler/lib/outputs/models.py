@@ -461,6 +461,22 @@ class Aws_Check_Output_JSON(Check_Output_JSON):
     def __init__(self, **metadata):
         super().__init__(**metadata)
 
+class Aws_Check_Output_JSON_ATHENA(Check_Output_JSON):
+    """
+    Aws_Check_Output_JSON-ATHENA generates a finding's output in JSON format for the AWS provider.
+    """
+
+    Profile: str = ""
+    AccountId: str = ""
+    OrganizationsInfo: Optional[AWS_Organizations_Info]
+    Region: str = ""
+    ResourceId: str = ""
+    ResourceArn: str = ""
+    ResourceTags: list = []
+
+    def __init__(self, **metadata):
+        super().__init__(**metadata)
+
 
 class Azure_Check_Output_JSON(Check_Output_JSON):
     """

@@ -139,6 +139,21 @@ def report(check_findings, output_options, audit_info):
                             )
                             file_descriptors["json"].write(",")
 
+                        if "json_athena" in file_descriptors:
+                            finding_output = generate_provider_output_json(
+                                finding.check_metadata.Provider,
+                                finding,
+                                audit_info,
+                                "json_athena",
+                                output_options,
+                            )
+                            json.dump(
+                                finding_output.dict(),
+                                file_descriptors["json_athena"],
+                                separators=(',', ':'),
+                            )
+                            file_descriptors["json_athena"].write("\n")
+
                         if "json-ocsf" in file_descriptors:
                             finding_output = fill_json_ocsf(
                                 audit_info, finding, output_options
