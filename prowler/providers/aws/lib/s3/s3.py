@@ -38,7 +38,8 @@ def send_to_s3_bucket(
 
         # S3 Object name
         bucket_directory = get_s3_object_path(output_directory)
-        object_name = bucket_directory + "/" + output_mode + "/" + filename
+        # object_name = bucket_directory + "/" + output_mode + "/" + filename
+        object_name = bucket_directory + "/" + filename
 
         s3_client = audit_session.client("s3")
         s3_client.upload_file(file_name, output_bucket_name, object_name)

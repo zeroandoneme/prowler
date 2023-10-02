@@ -214,72 +214,76 @@ def create_output(resources: list, audit_info: AWS_Audit_Info, args):
     output_file = (
         f"prowler-inventory-{audit_info.audited_account}-{output_file_timestamp}"
     )
-
-    for item in sorted(resources, key=lambda d: d["arn"]):
-        resource = {}
-        resource["AWS_AccountID"] = audit_info.audited_account
-        resource["AWS_Region"] = item["arn"].split(":")[3]
-        resource["AWS_Partition"] = item["arn"].split(":")[1]
-        resource["AWS_Service"] = item["arn"].split(":")[2]
-        resource["AWS_ResourceType"] = item["arn"].split(":")[5].split("/")[0]
-        resource["AWS_ResourceID"] = ""
-        if len(item["arn"].split("/")) > 1:
-            resource["AWS_ResourceID"] = item["arn"].split("/")[-1]
-        elif len(item["arn"].split(":")) > 6:
-            resource["AWS_ResourceID"] = item["arn"].split(":")[-1]
-        resource["AWS_ResourceARN"] = item["arn"]
-        # Cover S3 case
-        if resource["AWS_Service"] == "s3":
-            resource["AWS_ResourceType"] = "bucket"
-            resource["AWS_ResourceID"] = item["arn"].split(":")[-1]
-        # Cover WAFv2 case
-        if resource["AWS_Service"] == "wafv2":
-            resource["AWS_ResourceType"] = "/".join(
-                item["arn"].split(":")[-1].split("/")[:-2]
-            )
-            resource["AWS_ResourceID"] = "/".join(
-                item["arn"].split(":")[-1].split("/")[2:]
-            )
-        # Cover Config case
-        if resource["AWS_Service"] == "config":
-            resource["AWS_ResourceID"] = "/".join(
-                item["arn"].split(":")[-1].split("/")[1:]
-            )
-        resource["AWS_Tags"] = item["tags"]
-        json_output.append(resource)
-
-    # Serializing json
-    json_object = json.dumps(json_output, indent=4)
-
-    # Writing to sample.json
     with open(
         args.output_directory + "/" + output_file + json_file_suffix, "w"
     ) as outfile:
-        outfile.write(json_object)
+        
+        for item in sorted(resources, key=lambda d: d["arn"]):
+            resource = {}
+            resource["AWS_AccountID"] = audit_info.audited_account
+            resource["AWS_Region"] = item["arn"].split(":")[3]
+            resource["AWS_Partition"] = item["arn"].split(":")[1]
+            resource["AWS_Service"] = item["arn"].split(":")[2]
+            resource["AWS_ResourceType"] = item["arn"].split(":")[5].split("/")[0]
+            resource["AWS_ResourceID"] = ""
+            if len(item["arn"].split("/")) > 1:
+                resource["AWS_ResourceID"] = item["arn"].split("/")[-1]
+            elif len(item["arn"].split(":")) > 6:
+                resource["AWS_ResourceID"] = item["arn"].split(":")[-1]
+            resource["AWS_ResourceARN"] = item["arn"]
+            # Cover S3 case
+            if resource["AWS_Service"] == "s3":
+                resource["AWS_ResourceType"] = "bucket"
+                resource["AWS_ResourceID"] = item["arn"].split(":")[-1]
+            # Cover WAFv2 case
+            if resource["AWS_Service"] == "wafv2":
+                resource["AWS_ResourceType"] = "/".join(
+                    item["arn"].split(":")[-1].split("/")[:-2]
+                )
+                resource["AWS_ResourceID"] = "/".join(
+                    item["arn"].split(":")[-1].split("/")[2:]
+                )
+            # Cover Config case
+            if resource["AWS_Service"] == "config":
+                resource["AWS_ResourceID"] = "/".join(
+                    item["arn"].split(":")[-1].split("/")[1:]
+                )
+            resource["AWS_Tags"] = item["tags"]
 
-    csv_file = open(
-        args.output_directory + "/" + output_file + csv_file_suffix, "w", newline=""
-    )
-    csv_writer = csv.writer(csv_file)
 
-    count = 0
-    for data in json_output:
-        if count == 0:
-            header = data.keys()
-            csv_writer.writerow(header)
-            count += 1
-        csv_writer.writerow(data.values())
+            json_object = json.dumps(resource,separators=(',', ':'))
+            outfile.write(json_object + "\n")
 
-    csv_file.close()
+
+        # Serializing json
+        
+
+    # Writing to sample.json
+
+
+    #csv_file = open(
+        #args.output_directory + "/" + output_file + csv_file_suffix, "w", newline=""
+    #)
+    #csv_writer = csv.writer(csv_file)
+
+    #count = 0
+    #for data in json_output:
+        #if count == 0:
+            #header = data.keys()
+            #csv_writer.writerow(header)
+            #count += 1
+        #csv_writer.writerow(data.values())
+
+    #csv_file.close()
     print(
         f"\n{Fore.YELLOW}WARNING: Only resources that have or have had tags will appear (except for IAM and S3).\nSee more in https://docs.prowler.cloud/en/latest/tutorials/quick-inventory/#objections{Style.RESET_ALL}"
     )
     print("\nMore details in files:")
-    print(f" - CSV: {args.output_directory}/{output_file+csv_file_suffix}")
+    #print(f" - CSV: {args.output_directory}/{output_file+csv_file_suffix}")
     print(f" - JSON: {args.output_directory}/{output_file+json_file_suffix}")
 
     # Send output to S3 if needed (-B / -D)
-    for mode in ["json", "csv"]:
+    for mode in ["json"]:
         if args.output_bucket or args.output_bucket_no_assume:
             # Check if -B was input
             if args.output_bucket:
